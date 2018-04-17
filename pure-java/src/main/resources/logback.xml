@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration scan="true" scanPeriod="30 minutes" debug="false">
+
+    <!-- 由于没有使用 ch.qos.logback.ext.spring.web.LogbackConfigListener 监听器，因此必须将 logback.xml 放到 classpath 的一级目录下 -->
+
+    <property resource="bundle/logback.properties"/>
+
+    <contextName>${logback.context.name}</contextName>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) %green(%class#%M@%line) %msg%n</pattern>
+            <charset class="java.nio.charset.Charset">${log.charset}</charset>
+            <immediateFlush/>
+        </encoder>
+    </appender>
+
+    <root level="DEBUG">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+</configuration>
