@@ -24,7 +24,7 @@ deploy/
 # logs/
 
 # maven测试文件目录
-*/src/test/
+# */src/test/
 
 # 自定义文件上传目录
 upload/
