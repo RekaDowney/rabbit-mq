@@ -29,6 +29,8 @@ public class MqConnectionFactory {
             FACTORY.setUsername(ConfigUtils.MQ_TRANSLATOR.getAsString("rabbitmq.username"));
             FACTORY.setPassword(ConfigUtils.MQ_TRANSLATOR.getAsString("rabbitmq.password"));
             FACTORY.setVirtualHost(ConfigUtils.MQ_TRANSLATOR.getAsString("rabbitmq.vhost"));
+            // 支持通过 URI 形式构造连接池
+            // FACTORY.setUri("amqp://username:password@host:port/vhost");
         }
     }
 

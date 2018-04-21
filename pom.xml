@@ -152,6 +152,10 @@
             <groupId>me.junbin.commons</groupId>
             <artifactId>commons-utility</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
         <!-- utility -->
 
         <!-- log -->
