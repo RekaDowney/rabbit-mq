@@ -16,7 +16,9 @@ import java.util.concurrent.TimeUnit;
  * @author : Zhong Junbin
  * @email : <a href="mailto:rekadowney@gmail.com">发送邮件</a>
  * @createDate : 2018/4/23 21:18
- * @description :
+ * @description : fanout 类型交换机与路由键无关，该类交换机会将收到的所有消息都推送到与之相绑定的队列中。
+ * 特别注意：API 规范要求路由键必须非 null
+ * 非 durable 特性的交换机会在 RabbitMQ 重启的时候消失
  */
 public class FanoutExchange {
 
@@ -32,7 +34,7 @@ public class FanoutExchange {
         LOGGER.info("声明队列：{}", MqConstant.FANOUT_QUEUE);
         channel.queueDeclare(MqConstant.FANOUT_QUEUE, false, false, false, null);
 
-        // fanout 类型的交换机将会忽略路由键，因此路由键可以为 null
+        // fanout 类型的交换机将会忽略路由键，但路由键要求非 null，所以这里路由键可以使用空字符串
         LOGGER.info("将队列{}与交换机{}绑定在一起，路由键为空字符串（fanout类型跟路由键无关，但API要求路由键非 null）", MqConstant.FANOUT_QUEUE, MqConstant.FANOUT_EXCHANGE);
         channel.queueBind(MqConstant.FANOUT_QUEUE, MqConstant.FANOUT_EXCHANGE, MqConstant.EMPTY);
 
@@ -57,8 +59,8 @@ public class FanoutExchange {
                 try {
                     String message = String.format(messageTemplate, counter++);
                     LOGGER.debug("发布消息：{}", message);
-                    // 这里路由键要求非 null
-                    channel.basicPublish(MqConstant.FANOUT_EXCHANGE, MqConstant.EMPTY, null, MqUtils.utf8Data(message));
+                    // 这里路由键要求非 null，但 fanout 类交换机与路由键无关
+                    channel.basicPublish(MqConstant.FANOUT_EXCHANGE, Long.toString(counter), null, MqUtils.utf8Data(message));
                 } catch (IOException e) {
                     LOGGER.error("发布消息失败", e);
                 }
