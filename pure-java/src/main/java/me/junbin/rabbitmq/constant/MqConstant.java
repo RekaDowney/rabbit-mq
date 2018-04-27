@@ -20,13 +20,14 @@ public final class MqConstant {
 
     public static final String FANOUT_QUEUE = "queue.fanout";
     public static final String DIRECT_QUEUE = "queue.direct";
-    public static final String TOPIC_QUEUE = "queue.topic";
+    public static final String TOPIC_ASTERISK_QUEUE = "queue.topic.asterisk";
+    public static final String TOPIC_HASH_QUEUE = "queue.topic.hash";
     public static final String HEADERS_QUEUE = "queue.headers";
     public static final String DURABLE_QUEUE = "queue.durable";
     public static final String INTERNAL_QUEUE = "queue.internal";
 
     public static final String DIRECT_ROUTING_KEY = "direct.routing";
-    public static final String TOPIC_ROUTING_KEY_ASTERISK = "topic.*.routing";
-    public static final String TOPIC_ROUTING_KEY_ = "topic.#.routing";
+    public static final String TOPIC_ASTERISK_ROUTING_KEY = "topic.asterisk.*";
+    public static final String TOPIC_HASH_ROUTING_KEY = "topic.#.hash";
 
 }
