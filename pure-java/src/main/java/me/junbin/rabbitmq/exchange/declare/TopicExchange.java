@@ -148,6 +148,8 @@ public class TopicExchange {
             channel.queueUnbind(TOPIC_ASTERISK_QUEUE, TOPIC_EXCHANGE, TOPIC_ASTERISK_ROUTING_KEY);
             channel.queueUnbind(TOPIC_HASH_QUEUE, TOPIC_EXCHANGE, TOPIC_HASH_ROUTING_KEY);
 
+            // 结束当前运行
+            System.exit(0);
         }
     }
 

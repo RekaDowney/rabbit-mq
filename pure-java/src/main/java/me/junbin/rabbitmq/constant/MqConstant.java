@@ -15,19 +15,25 @@ public final class MqConstant {
     public static final String DIRECT_EXCHANGE = "exchange.direct";
     public static final String TOPIC_EXCHANGE = "exchange.topic";
     public static final String HEADERS_EXCHANGE = "exchange.headers";
-    public static final String DURABLE_EXCHANGE = "exchange.durable";
+    public static final String EXTERNAL_EXCHANGE = "exchange.external";
     public static final String INTERNAL_EXCHANGE = "exchange.internal";
+    public static final String DURABLE_EXCHANGE = "exchange.durable";
 
     public static final String FANOUT_QUEUE = "queue.fanout";
     public static final String DIRECT_QUEUE = "queue.direct";
     public static final String TOPIC_ASTERISK_QUEUE = "queue.topic.asterisk";
     public static final String TOPIC_HASH_QUEUE = "queue.topic.hash";
     public static final String HEADERS_QUEUE = "queue.headers";
-    public static final String DURABLE_QUEUE = "queue.durable";
+    public static final String X_MATCH_ALL_HEADERS_QUEUE = "queue.headers.all";
+    public static final String X_MATCH_ANY_HEADERS_QUEUE = "queue.headers.any";
     public static final String INTERNAL_QUEUE = "queue.internal";
+    public static final String DURABLE_QUEUE = "queue.durable";
 
     public static final String DIRECT_ROUTING_KEY = "direct.routing";
     public static final String TOPIC_ASTERISK_ROUTING_KEY = "topic.asterisk.*";
     public static final String TOPIC_HASH_ROUTING_KEY = "topic.#.hash";
+    public static final String X_MATCH = "x-match";
+    public static final String X_MATCH_ALL = "all";
+    public static final String X_MATCH_ANY = "any";
 
 }
