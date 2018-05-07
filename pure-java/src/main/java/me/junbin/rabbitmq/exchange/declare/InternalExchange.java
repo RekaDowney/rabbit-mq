@@ -15,7 +15,7 @@ import static me.junbin.rabbitmq.constant.MqConstant.*;
 
 /**
  * @author : Zhong Junbin
- * @email : <a href="mailto:zhongjunbin@chinamaincloud.com">发送邮件</a>
+ * @email : <a href="mailto:rekadowney@gmail.com">发送邮件</a>
  * @createDate : 2018/5/7 17:07
  * @description : 内部交换机无法发布消息，只能够通过 {@link Channel#exchangeBind(String, String, String)} 方法将内部交换机绑定到外部交换机上，
  * 随后通过外部交换机发布消息，以 外部交换机 -> 内部交换机 -> 队列 的消息流方式进行消息消费

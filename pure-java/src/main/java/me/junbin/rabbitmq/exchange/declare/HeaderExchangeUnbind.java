@@ -14,7 +14,7 @@ import static me.junbin.rabbitmq.constant.MqConstant.*;
 
 /**
  * @author : Zhong Junbin
- * @email : <a href="mailto:zhongjunbin@chinamaincloud.com">发送邮件</a>
+ * @email : <a href="mailto:rekadowney@gmail.com">发送邮件</a>
  * @createDate : 2018/5/7 14:37
  * @description : headers 类型交换机与队列的绑定如果不指定 {@link Channel#queueBind(String, String, String, Map)} 的最后一个参数，
  * 那么他们绑定的 headers 就变成了 {}，此时所有发送到该交换机的消息都将发送到这种绑定上的队列进行消费
