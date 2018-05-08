@@ -36,4 +36,11 @@ public final class MqConstant {
     public static final String X_MATCH_ALL = "all";
     public static final String X_MATCH_ANY = "any";
 
+    public static final String DIRECT_EXCLUSIVE_EXCHANGE = "exchange.direct.exclusive";
+    public static final String EXCLUSIVE1_QUEUE = "queue.exclusive.1";
+    public static final String DIRECT_EXCLUSIVE1_ROUTING_KEY = "topic.exclusive.1";
+    public static final String EXCLUSIVE2_QUEUE = "queue.exclusive.2";
+    public static final String DIRECT_EXCLUSIVE2_ROUTING_KEY = "topic.exclusive.2";
+    public static final String AUTO_DELETE_QUEUE = "queue.auto.delete";
+
 }
