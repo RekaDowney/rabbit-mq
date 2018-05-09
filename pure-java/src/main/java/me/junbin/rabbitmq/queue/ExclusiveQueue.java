@@ -17,8 +17,9 @@ import static me.junbin.rabbitmq.constant.MqConstant.*;
  * @email : <a href="mailto:rekadowney@gmail.com">发送邮件</a>
  * @createDate : 2018/5/7 23:02
  * @description : 排他队列是基于连接 {@link Connection} 的，同一连接的不同信道 {@link Channel}
- * 可以访问相同名称的排他队列
- * 不可使用相同名称的排他队列，排他队列在
+ * 可以访问相同名称的排他队列。
+ * ⭐ 当某个排他队列被创建的之后，其他连接无法创建相同名称的（排他）队列
+ * ⭐ 排他队列在连接断开的时候就会自动删除，即使设置了 durable 为 {@literal true} 也会被删除
  */
 public class ExclusiveQueue {
 
@@ -53,6 +54,5 @@ public class ExclusiveQueue {
         thread.setName(threadName);
         thread.start();
     }
-
 
 }
