@@ -29,7 +29,8 @@ public final class MqConstant {
     public static final String X_MATCH_ANY_HEADERS_QUEUE = "queue.headers.any";
     public static final String INTERNAL_QUEUE = "queue.internal";
     public static final String DURABLE_QUEUE = "queue.durable";
-    public static final String DD_QUEUE = "queue.durable.direct";
+    public static final String DD_TTL_QUEUE = "queue.ttl.durable.direct";
+    public static final String DD_EXPIRE_QUEUE = "queue.expire.durable.direct";
 
     public static final String DIRECT_ROUTING_KEY = "direct.routing";
     public static final String TOPIC_ASTERISK_ROUTING_KEY = "topic.asterisk.*";

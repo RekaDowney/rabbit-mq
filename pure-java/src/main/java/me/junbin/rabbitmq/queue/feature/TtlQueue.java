@@ -1,4 +1,4 @@
-package me.junbin.rabbitmq.queue;
+package me.junbin.rabbitmq.queue.feature;
 
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
@@ -21,7 +21,8 @@ import static me.junbin.rabbitmq.constant.MqConstant.*;
  * @author : Zhong Junbin
  * @email : <a href="mailto:rekadowney@gmail.com">发送邮件</a>
  * @createDate : 2018/5/10 14:19
- * @description : x-message-ttl 特性一旦遇到多消费者就会失灵
+ * @description : x-message-ttl 特性一旦遇到多消费者就会失效。
+ * 该特性指定消息在队列中的存活时间，当过了指定存活时间时，消息将会从队列中删除
  */
 public class TtlQueue {
 
@@ -44,10 +45,10 @@ public class TtlQueue {
             Map<String, Object> arguments = new HashMap<>();
             // TTL 队列，消息 TTL 为 3 秒，超过 3 秒没有被消费者接收则从队列中删除该消息
             arguments.put(MqConstant.FEATURE_X_MESSAGE_TTL, TimeUnit.SECONDS.toMillis(3));
-            LOGGER.debug("声明{}持久化队列，队列参数为{}并指定消费者", DD_QUEUE, arguments);
-            channel.queueDeclare(DD_QUEUE, true, false, false, arguments);
+            LOGGER.debug("声明{}持久化队列，队列参数为{}并指定消费者", DD_TTL_QUEUE, arguments);
+            channel.queueDeclare(DD_TTL_QUEUE, true, false, false, arguments);
 
-            channel.queueBind(DD_QUEUE, DD_EXCHANGE, DD_TTL_ROUTING_KEY);
+            channel.queueBind(DD_TTL_QUEUE, DD_EXCHANGE, DD_TTL_ROUTING_KEY);
 
             // 当前信道的每个消费者同一时间最多消费 1 个消息
             channel.basicQos(1, true);
@@ -67,7 +68,7 @@ public class TtlQueue {
 //            thread1.start();
 //            thread2.start();
 
-            channel.basicConsume(DD_QUEUE, false, MqUtils.newConsumer(channel, DD_QUEUE, messageInfo -> {
+            channel.basicConsume(DD_TTL_QUEUE, false, MqUtils.newConsumer(channel, DD_TTL_QUEUE, messageInfo -> {
                 try {
                     TimeUnit.SECONDS.sleep(7);
                 } catch (InterruptedException ignored) {
@@ -87,7 +88,7 @@ public class TtlQueue {
             try {
                 Connection connection = MqConnectionFactory.newConnection();
                 Channel channel = connection.createChannel();
-                channel.basicConsume(DD_QUEUE, false, MqUtils.newConsumer(channel, DD_QUEUE, messageInfo -> {
+                channel.basicConsume(DD_TTL_QUEUE, false, MqUtils.newConsumer(channel, DD_TTL_QUEUE, messageInfo -> {
                     String queueName = messageInfo.getQueueName();
                     LOGGER.info("{} 队列 {} 消费消息 --> {}", threadName, queueName, messageInfo.getBodyString());
                     long deliveryTag = messageInfo.getEnvelope().getDeliveryTag();

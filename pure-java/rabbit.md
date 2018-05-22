@@ -233,7 +233,7 @@
 　　`arguments`表示当前声明的队列的额外参数配置，主要有：
 
 + `x-message-ttl`：即`Message TTL`，特性`Features=TTL`，数据类型为整型数值。可以用来设置整个队列中所有消息的生命周期或者在发布消息时为某个消息指定生命周期，单位为毫秒（ms）。当`TTL`跌至`0`时，消息将会从队列中删除，如果该队列绑定了多个消费者，则该特性失效。参考[队列消息生命周期和队列生命周期限制][ttl]。
-+ `x-expires`：即`Auto Expire`，特性`Features=Exp`，数据类型为整型数值。当队列在指定时间内没有被访问（包括但不限于`basicConsume`、`basicGet`、`queueDeclare`）就会被删除，单位为毫秒（ms）。参考[队列消息生命周期和队列生命周期限制][ttl]。
++ `x-expires`：即`Auto Expire`，特性`Features=Exp`，数据类型为整型数值。当队列在指定时间内没有被访问（包括但不限于`basicConsume`、`basicGet`、`queueDeclare`）就会被删除，单位为毫秒（ms）。注意：设置了该特性后，`durable`配置将失效。参考[队列消息生命周期和队列生命周期限制][ttl]。
 + `x-max-length`：即`Max Length`，特性`Features=Lim`，数据类型为整型数值。限制队列中消息的数量，当队列中消息的数量大于指定值时，将超出数量的最早几条消息删除（类似`LRU`算法），单位为个。参考[队列消息数量限制][x-max-length]。
 + `x-dead-letter-exchange`：即`Dead letter exchange`，特性`Features=DLX`，数据类型为字符串（交换机的名称）。用于将死信消息转发到指定交换机（该交换机称为死信收容交换机），即当触发`x-message-ttl`或者`x-max-length`时根据将消息转发到死信收容交换机而不是直接删除。参考[死信收容交换机及死信收容路由键][dlx-dlk]。
 + `x-dead-letter-routing-key`：即`Dead letter routing key`，特性`Features=DLK`，数据类型为字符串（路由键的名称或者队列的名称）。用于将死信消息从死信收容交换机路由到指定的队列中。参考[死信收容交换机及死信收容路由键][dlx-dlk]。
