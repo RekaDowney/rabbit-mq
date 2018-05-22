@@ -1,6 +1,7 @@
 package me.junbin.rabbitmq.util;
 
 import com.rabbitmq.client.*;
+import me.junbin.rabbitmq.util.function.ConsumerAction;
 import me.junbin.rabbitmq.util.function.SimpleConsumerAction;
 
 import java.io.IOException;
@@ -22,11 +23,20 @@ public abstract class MqUtils {
         return new String(data, StandardCharsets.UTF_8);
     }
 
-    public static Consumer newConsumer(Channel channel, final SimpleConsumerAction action) {
+    public static Consumer newConsumer(final Channel channel, final SimpleConsumerAction action) {
         return new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
                 action.handle(body);
+            }
+        };
+    }
+
+    public static Consumer newConsumer(final Channel channel, final String queueName, final ConsumerAction consumerAction) {
+        return new DefaultConsumer(channel) {
+            @Override
+            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                consumerAction.handle(new ConsumerAction.MessageInfo(queueName, consumerTag, envelope, properties, body));
             }
         };
     }

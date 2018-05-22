@@ -26,8 +26,50 @@ public class ExclusiveQueue {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExclusiveQueue.class);
 
     public static void main(String[] args) throws Exception {
+
+        diffChannelExclusiveQueue();
+
+/*
         runExclusiveQueue("exclusive1", EXCLUSIVE1_QUEUE, DIRECT_EXCLUSIVE1_ROUTING_KEY);
         runExclusiveQueue("exclusive2", EXCLUSIVE2_QUEUE, DIRECT_EXCLUSIVE2_ROUTING_KEY);
+*/
+
+    }
+
+    // 测试相同 Connection 不同 Channel 对排他队列的可访问性。结论：可以
+    private static void diffChannelExclusiveQueue() throws Exception {
+        try (Connection connection = MqConnectionFactory.newConnection()) {
+            Channel channel = connection.createChannel();
+            String queueName = "ex.queue";
+
+            channel.exchangeDeclare(DIRECT_EXCLUSIVE_EXCHANGE, BuiltinExchangeType.DIRECT, false, false, null);
+            channel.queueDeclare(queueName, false, true, false, null);
+            String routingKey1 = "ex.queue.routingKey.1";
+            channel.queueBind(queueName, DIRECT_EXCLUSIVE_EXCHANGE, routingKey1);
+            channel.basicConsume(queueName, true,
+                    (consumerTag, message) -> LOGGER.info("队列 {}，路由键：{} 消费消息 --> {}", queueName, message.getEnvelope().getRoutingKey(), MqUtils.utf8String(message.getBody())),
+                    consumerTag -> LOGGER.info("队列 {} 取消消息消费 {}", queueName, consumerTag));
+
+
+            channel = connection.createChannel();
+            channel.exchangeDeclare(DIRECT_EXCLUSIVE_EXCHANGE, BuiltinExchangeType.DIRECT, false, false, null);
+            channel.queueDeclare(queueName, false, true, false, null);
+            String routingKey2 = "ex.queue.routingKey.2";
+            channel.queueBind(queueName, DIRECT_EXCLUSIVE_EXCHANGE, routingKey2);
+            channel.basicConsume(queueName, true,
+                    (consumerTag, message) -> LOGGER.info("队列 {}，路由键：{} 消费消息 --> {}", queueName, message.getEnvelope().getRoutingKey(), MqUtils.utf8String(message.getBody())),
+                    consumerTag -> LOGGER.info("队列 {} 取消消息消费 {}", queueName, consumerTag));
+
+
+            for (int i = 1; i < 4; i++) {
+                String message = String.format("第%s条消息", i);
+                LOGGER.debug("发布消息： {}", message);
+                channel.basicPublish(DIRECT_EXCLUSIVE_EXCHANGE, routingKey1, null, MqUtils.utf8Data(message));
+                channel.basicPublish(DIRECT_EXCLUSIVE_EXCHANGE, routingKey2, null, MqUtils.utf8Data(message));
+            }
+
+            Thread.currentThread().join(TimeUnit.SECONDS.toMillis(5));
+        }
     }
 
     private static void runExclusiveQueue(final String threadName, final String queueName, final String routingKey) throws Exception {
