@@ -19,6 +19,8 @@ public final class MqConstant {
     public static final String INTERNAL_EXCHANGE = "exchange.internal";
     public static final String DURABLE_EXCHANGE = "exchange.durable";
     public static final String DD_EXCHANGE = "exchange.durable.direct";
+    public static final String DELAY_EXCHANGE = "exchange.delay";
+    public static final String HANDLE_DELAY_EXCHANGE = "exchange.delay.handler";
 
     public static final String FANOUT_QUEUE = "queue.fanout";
     public static final String DIRECT_QUEUE = "queue.direct";
@@ -31,6 +33,8 @@ public final class MqConstant {
     public static final String DURABLE_QUEUE = "queue.durable";
     public static final String DD_TTL_QUEUE = "queue.ttl.durable.direct";
     public static final String DD_EXPIRE_QUEUE = "queue.expire.durable.direct";
+    public static final String DELAY_QUEUE = "queue.delay";
+    public static final String HANDLE_DELAY_QUEUE = "queue.delay.handler";
 
     public static final String DIRECT_ROUTING_KEY = "direct.routing";
     public static final String TOPIC_ASTERISK_ROUTING_KEY = "topic.asterisk.*";
@@ -47,6 +51,9 @@ public final class MqConstant {
     public static final String DD_TTL_ROUTING_KEY = "dd.ttl.queue.exchange";
     public static final String AUTO_DELETE_QUEUE = "queue.auto.delete";
 
+    public static final String DELAY_ROUTING_KEY = "delay.key";
+    public static final String HANDLE_DELAY_ROUTING_KEY = "delay.handle.key";
+
     // 特性
     public static final String FEATURE_X_MESSAGE_TTL = "x-message-ttl";
     public static final String FEATURE_X_EXPIRES = "x-expires";
@@ -54,5 +61,30 @@ public final class MqConstant {
     public static final String FEATURE_DEAD_LETTER_EXCHANGE = "x-dead-letter-exchange";
     public static final String FEATURE_DEAD_LETTER_ROUNTING_KEY = "x-dead-letter-routing-key";
     public static final String FEATURE_X_MAX_PRIORITY = "x-max-priority";
+
+    public static final class FanoutMC {
+        public static final String EXCHANGE = "fanout.mc.exchange";
+        public static final String QUEUE = "fanout.mc.queue";
+        public static final String ROUTING_KEY = "";
+    }
+
+    public static final class DirectMC {
+        public static final String EXCHANGE = "direct.mc.exchange";
+        public static final String QUEUE = "direct.mc.queue";
+        public static final String ROUTING_KEY = "direct.mc.routing.key";
+    }
+
+    public static final class TopicMC {
+        public static final String EXCHANGE = "topic.mc.exchange";
+        public static final String QUEUE = "topic.mc.queue";
+        public static final String ROUTING_KEY = "topic.mc.routing.key";
+    }
+
+    public static final class HeadersMC {
+        public static final String EXCHANGE = "headers.mc.exchange";
+        public static final String QUEUE = "headers.mc.queue";
+        public static final String ROUTING_KEY = "headers.mc.routing.key";
+    }
+
 
 }
