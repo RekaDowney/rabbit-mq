@@ -1,5 +1,7 @@
 package me.junbin.rabbitmq.constant;
 
+import com.rabbitmq.client.AMQP;
+
 /**
  * @author : Zhong Junbin
  * @email : <a href="mailto:rekadowney@gmail.com">发送邮件</a>
@@ -84,6 +86,29 @@ public final class MqConstant {
         public static final String EXCHANGE = "headers.mc.exchange";
         public static final String QUEUE = "headers.mc.queue";
         public static final String ROUTING_KEY = "headers.mc.routing.key";
+    }
+
+    public static final class EQM {
+        public static final String EXCHANGE = "eqm.exchange";
+        public static final String QUEUE = "eqm.queue";
+        public static final String ROUTING_KEY = "eqm.routing.key";
+    }
+
+    public static final class MessageProperties {
+
+        private static final Integer PERSISTENT_DELIVERY_MODE = 2;
+        private static final String APPLICATION_JSON = "application/json";
+        private static final String TEXT_PLAIN = "text/plain";
+
+        public static final AMQP.BasicProperties PERSISTENT = new AMQP.BasicProperties.Builder()
+                .deliveryMode(PERSISTENT_DELIVERY_MODE).build();
+
+        public static final AMQP.BasicProperties PERSISTENT_JSON = new AMQP.BasicProperties.Builder()
+                .deliveryMode(PERSISTENT_DELIVERY_MODE).contentType(APPLICATION_JSON).build();
+
+        public static final AMQP.BasicProperties PERSISTENT_TEXT = new AMQP.BasicProperties.Builder()
+                .deliveryMode(PERSISTENT_DELIVERY_MODE).contentType(TEXT_PLAIN).build();
+
     }
 
 
