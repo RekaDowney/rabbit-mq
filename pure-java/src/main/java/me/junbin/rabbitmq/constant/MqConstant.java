@@ -120,5 +120,20 @@ public final class MqConstant {
 
     }
 
+    public static final class Tx {
+
+        public static final String EXCHANGE = "tx.exchange";
+        public static final String QUEUE = "tx.queue";
+        public static final String ROUTING_KEY = "tx.routing.key";
+
+    }
+
+    public static final class Confirm {
+
+        public static final String EXCHANGE = "tx.exchange";
+        public static final String QUEUE = "tx.queue";
+        public static final String ROUTING_KEY = "tx.routing.key";
+
+    }
 
 }
