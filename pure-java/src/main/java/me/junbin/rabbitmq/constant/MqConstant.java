@@ -13,6 +13,7 @@ public final class MqConstant {
     public static final String HELLO_WORLD_QUEUE = "hello-world";
     public static final String EMPTY = "";
 
+    public static final String DEFAULT_EXCHANGE = EMPTY;
     public static final String FANOUT_EXCHANGE = "exchange.fanout";
     public static final String DIRECT_EXCHANGE = "exchange.direct";
     public static final String TOPIC_EXCHANGE = "exchange.topic";
@@ -108,6 +109,14 @@ public final class MqConstant {
 
         public static final AMQP.BasicProperties PERSISTENT_TEXT = new AMQP.BasicProperties.Builder()
                 .deliveryMode(PERSISTENT_DELIVERY_MODE).contentType(TEXT_PLAIN).build();
+
+    }
+
+    public static final class Rpc {
+
+        public static final String EXCHANGE = "rpc.exchange";
+        public static final String QUEUE = "rpc.queue";
+        public static final String ROUTING_KEY = "rpc.routing.key";
 
     }
 

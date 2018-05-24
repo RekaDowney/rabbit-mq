@@ -59,7 +59,7 @@ public abstract class AbstractTtlConsumer {
             }
             String queueName = messageInfo.getQueueName();
             long deliveryTag = messageInfo.getEnvelope().getDeliveryTag();
-            LOGGER.info("{} 队列 {} 消费消息 --> {}", this.consumer, queueName, messageInfo.getBodyString());
+            LOGGER.info("{} 队列 {} 消费消息 --> {}", this.consumer, queueName, messageInfo.getUtf8Body());
             channel.basicAck(deliveryTag, false);
         }));
     }

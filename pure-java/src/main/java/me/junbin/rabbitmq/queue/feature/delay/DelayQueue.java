@@ -46,7 +46,7 @@ public class DelayQueue {
 
             // 消费者开始监听 延迟处理队列。3秒后消费者才开始收到消息
             channel.basicConsume(HANDLE_DELAY_QUEUE, true, MqUtils.newConsumer(channel, HANDLE_DELAY_QUEUE,
-                    messageInfo -> LOGGER.info("队列 {} 开始处理消息 {}", messageInfo.getQueueName(), messageInfo.getBodyString())));
+                    messageInfo -> LOGGER.info("队列 {} 开始处理消息 {}", messageInfo.getQueueName(), messageInfo.getUtf8Body())));
 
             // 消息从 延迟交换机 发布，到期后通过 延迟处理交换机 通过 延迟处理路由键 发布到 延迟处理队列。最后被消费者消费
 

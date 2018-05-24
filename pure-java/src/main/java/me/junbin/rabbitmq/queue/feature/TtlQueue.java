@@ -75,7 +75,7 @@ public class TtlQueue {
                 }
                 String queueName = messageInfo.getQueueName();
                 long deliveryTag = messageInfo.getEnvelope().getDeliveryTag();
-                LOGGER.info("消费者 1 队列 {} 消费消息 --> {}", queueName, messageInfo.getBodyString());
+                LOGGER.info("消费者 1 队列 {} 消费消息 --> {}", queueName, messageInfo.getUtf8Body());
                 channel.basicAck(deliveryTag, false);
             }));
 
@@ -90,7 +90,7 @@ public class TtlQueue {
                 Channel channel = connection.createChannel();
                 channel.basicConsume(DD_TTL_QUEUE, false, MqUtils.newConsumer(channel, DD_TTL_QUEUE, messageInfo -> {
                     String queueName = messageInfo.getQueueName();
-                    LOGGER.info("{} 队列 {} 消费消息 --> {}", threadName, queueName, messageInfo.getBodyString());
+                    LOGGER.info("{} 队列 {} 消费消息 --> {}", threadName, queueName, messageInfo.getUtf8Body());
                     long deliveryTag = messageInfo.getEnvelope().getDeliveryTag();
                     try {
                         TimeUnit.SECONDS.sleep(sleepSecond);

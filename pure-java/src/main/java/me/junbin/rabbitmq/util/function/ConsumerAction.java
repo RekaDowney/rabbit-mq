@@ -77,11 +77,11 @@ public interface ConsumerAction {
             this.body = body;
         }
 
-        public String getBodyString() {
+        public String getUtf8Body() {
             return MqUtils.utf8String(this.body);
         }
 
-        public String getBodyString(Charset charset) {
+        public String getBody(Charset charset) {
             return new String(this.body, charset);
         }
 

@@ -43,7 +43,7 @@ public class CommonConsumer {
         channel.queueBind(queue, exchange, routingKey);
 
         channel.basicConsume(queue, true, MqUtils.newConsumer(channel, queue,
-                mi -> LOGGER.info("类型：{}， {} 消费队列 {} 的消息 --> {}", type.getType(), consumerName, mi.getQueueName(), mi.getBodyString())));
+                mi -> LOGGER.info("类型：{}， {} 消费队列 {} 的消息 --> {}", type.getType(), consumerName, mi.getQueueName(), mi.getUtf8Body())));
 
 /*
         channel.basicConsume(queue, false, MqUtils.newConsumer(channel, queue,

@@ -40,7 +40,7 @@ public class EqmConsumer {
         // systemctl start rabbitmq-server.service 之后再重启消费者，看消费情况
         channel.basicConsume(QUEUE, false, MqUtils.newConsumer(channel, QUEUE, mi -> {
             String queueName = mi.getQueueName();
-            String bodyString = mi.getBodyString();
+            String bodyString = mi.getUtf8Body();
             LOGGER.info("开始消费队列 {} 消息 --> {}", queueName, bodyString);
             try {
                 TimeUnit.SECONDS.sleep(10);
