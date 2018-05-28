@@ -11,6 +11,7 @@
 
     <modules>
         <module>pure-java</module>
+        <module>spring</module>
     </modules>
 
     <name>rabbit-mq Maven Webapp</name>

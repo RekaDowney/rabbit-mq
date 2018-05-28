@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/rabbit
+       http://www.springframework.org/schema/rabbit/spring-rabbit.xsd
+">
+
+    <!-- Spring Bean 扫描 -->
+    <context:component-scan base-package="me.junbin.rabbitmq.spring"/>
+
+    <!-- 加载配置文件 -->
+    <context:property-placeholder
+            file-encoding="UTF-8"
+            location="classpath:bundle/rabbitmq.properties"
+    />
+
+    <!-- 配置 RabbitMQ 连接池 -->
+    <rabbit:connection-factory
+            id="connectionFactory"
+            host="${rabbitmq.host}"
+            port="${rabbitmq.port}"
+            username="${rabbitmq.username}"
+            password="${rabbitmq.password}"
+            virtual-host="${rabbitmq.vhost}"
+    />
+
+    <!-- 配置 RabbitAdmin，这样通过 rabbit 前缀配置的 交换机（exchange） 和 队列（queue） 在项目启动时会自动在 RabbitMQ 服务器上配置 -->
+    <rabbit:admin
+            id="rabbitAdmin"
+            connection-factory="connectionFactory"
+            auto-startup="true"
+            ignore-declaration-exceptions="false"
+    />
+
+    <!-- 消息对象转换器 -->
+    <bean
+            id="rabbitGsonMessageConverter"
+            class="me.junbin.rabbitmq.spring.converter.RabbitUtf8GsonMessageConverter"
+    />
+
+    <!-- 重试次数，最多重试 5 次 -->
+    <bean
+            id="retryPolicy"
+            class="org.springframework.retry.policy.SimpleRetryPolicy"
+            p:maxAttempts="5"
+    />
+
+    <!-- 重试时的退避算法，第一次失败休眠 0.5 秒后重试，第二次失败休眠 1 秒后重试，第三次失败休眠 2 秒后重试，依此类推。但最大休眠时间为 10 秒 -->
+    <bean
+            id="backOffPolicy"
+            class="org.springframework.retry.backoff.ExponentialBackOffPolicy"
+            p:initialInterval="500"
+            p:maxInterval="10000"
+            p:multiplier="2"
+    />
+
+    <!-- 重试机制，当所有重试都失败时抛出最后发生的异常 -->
+    <bean
+            id="retryTemplate"
+            class="org.springframework.retry.support.RetryTemplate"
+            p:retryPolicy-ref="retryPolicy"
+            p:backOffPolicy-ref="backOffPolicy"
+            p:throwLastExceptionOnExhausted="true"
+    />
+
+    <!-- 配置 RabbitTemplate，这个配置作为基础配置存在 -->
+    <!-- message-converter 指定消息对象与 byte[] 的转换器 -->
+    <!-- retry-template 指定所有 RabbitMQ 操作（发布、声明、确认、消费等）的失败重试机制 -->
+    <rabbit:template
+            id="rabbitTemplate"
+            connection-factory="connectionFactory"
+            encoding="UTF-8"
+            message-converter="rabbitGsonMessageConverter"
+    />
+
+    <rabbit:queue
+            id="fanoutQueue"
+            name="${rabbitmq.fanout.queue}"
+            durable="true"
+            exclusive="false"
+            auto-delete="false"
+    />
+
+    <rabbit:queue
+            id="directQueue"
+            name="${rabbitmq.direct.queue}"
+    />
+
+    <rabbit:queue
+            id="topicQueue"
+            name="${rabbitmq.topic.queue}"
+    />
+
+    <rabbit:queue
+            id="headersQueue"
+            name="${rabbitmq.headers.queue}"
+    />
+
+    <!-- 在 RabbitMQ 服务器上安装 delayed message exchange plugin 插件可以支持 delayed 配置 -->
+    <rabbit:fanout-exchange id="fanoutExchange" name="${rabbitmq.fanout.exchange}">
+        <rabbit:bindings>
+            <rabbit:binding queue="fanoutQueue"/>
+        </rabbit:bindings>
+    </rabbit:fanout-exchange>
+
+    <rabbit:direct-exchange id="directExchange" name="${rabbitmq.direct.exchange}">
+        <rabbit:bindings>
+            <rabbit:binding queue="directQueue" key="${rabbitmq.direct.routing.key}"/>
+        </rabbit:bindings>
+    </rabbit:direct-exchange>
+
+    <rabbit:topic-exchange id="topicExchange" name="${rabbitmq.topic.exchange}">
+        <rabbit:bindings>
+            <rabbit:binding pattern="${rabbitmq.topic.routing.key}" queue="topicQueue"/>
+        </rabbit:bindings>
+    </rabbit:topic-exchange>
+
+    <rabbit:headers-exchange id="headersExchange" name="${rabbitmq.headers.exchange}">
+        <rabbit:bindings>
+            <rabbit:binding queue="headersQueue">
+                <rabbit:binding-arguments key-type="java.lang.String" value-type="java.lang.Object">
+                    <description>Headers类型交换机头部配置</description>
+                    <entry key="${rabbitmq.x.match}" value="${rabbitmq.x.match.any}"/>
+                    <entry key="username" value="reka"/>
+                    <entry key="age" value="24"/>
+                </rabbit:binding-arguments>
+            </rabbit:binding>
+        </rabbit:bindings>
+    </rabbit:headers-exchange>
+
+    <!--
+        connection-factory 指定 RabbitMQ 的连接池 BeanName。默认为：rabbitConnectionFactory
+
+        message-converter 指定实现 org.springframework.amqp.support.converter.MessageConverter 的消息转换器。
+                          默认为：org.springframework.amqp.support.converter.SimpleMessageConverter
+
+        type 为 simple 的时候采用 org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer 实例（默认）；
+             为 direct 的时候采用 org.springframework.amqp.rabbit.listener.DirectMessageListenerContainer 实例。
+
+        acknowledge 为 manual 时 Listener 必须实现 org.springframework.amqp.rabbit.core.ChannelAwareMessageListener 接口；
+                    为 none 或者 auto 时 Listener 可以只实现 org.springframework.amqp.core.MessageListener
+
+        auto-declare 指定当与消费者相关联的 queue 或者 exchange 因为 auto-delete 或者 ttl 等原因造成丢失时自动重新声明这些 queue 或者 exchange（默认为 true）
+
+        error-handler 指定（TaskScheduler）消息异步处理过程中出现的异常，必须是 org.springframework.util.ErrorHandler 实例
+
+        channel-transacted 表示是否开启事务，默认为 false，如果 acknowledge 为 none 则不能配置为 true（即自动确认机制不可以开启事务）
+
+        concurrency 只有当 type="simple" 时生效，设置启动消费者（MessageListener）的初始并发量。
+                    虽然我们只配置了一个 MessageListener，但是 Spring 会通过多线程方式调用同一个 MessageListener 执行并发消费
+
+        max-concurrency 只有当 type="simple" 时生效，设置启动消费者（MessageListener）的最大并发量，必须大于或等于 concurrency
+
+        prefetch 指定 MQ 在单个请求中向消费者发送多少条请求，该值越大则吞吐量越大。该值必须大于等于事务处理的消息数量
+
+     -->
+    <!-- 如果 Listener 没有实现 ChannelAwareMessageListener 接口或者 MessageListener 接口，则可以通过 method 字段指定消息消费方法 -->
+    <rabbit:listener-container connection-factory="connectionFactory" message-converter="rabbitGsonMessageConverter"
+                               type="simple" acknowledge="manual" concurrency="1" prefetch="3">
+        <!--
+                ref 指定消费者；
+                queues 指定消费者所监听的队列引用（即 rabbit:queue#id 属性），多个采用英文逗号分隔；
+                queue-names 指定消费者所监听的队列名称（即 rabbit:queue#name 属性），多个采用英文逗号分隔；
+                queues 和 queue-names 必须至少存在一个；
+                priority 指定消费者的优先级；
+                exclusive 表示是否是排他消费者，默认为 false，true 的时候将会组织其他消费者从该队列消费消息。当设置为 true 时，必须将 concurrency 指定为 1
+        -->
+        <rabbit:listener ref="fanoutQueueListener" queues="fanoutQueue" exclusive="true"/>
+        <rabbit:listener ref="fanoutQueueListener2" queues="fanoutQueue"/>
+        <rabbit:listener ref="directQueueListener" queues="directQueue"/>
+        <rabbit:listener ref="topicQueueListener" queues="topicQueue"/>
+        <rabbit:listener ref="headersQueueListener" queues="headersQueue"/>
+    </rabbit:listener-container>
+
+    <!--
+        &lt;!&ndash; 按照月份生成队列名称策略 &ndash;&gt;
+        <bean
+                id="namingStrategy"
+                class="me.junbin.rabbitmq.spring.config.MonthQueueNameStrategy"
+        />
+
+        &lt;!&ndash; Spring RabbitMQ 在队列名称为空的时候，会调用 org.springframework.amqp.core.AnonymousQueue.UUIDNamingStrategy 命名策略生成队列名称 &ndash;&gt;
+        &lt;!&ndash; 我们可以不使用 name 配置，直接使用 name-strategy 指定一个 org.springframework.amqp.core.AnonymousQueue.NamingStrategy beanName 来配置队列名称生成规则 &ndash;&gt;
+        <rabbit:queue
+                id="autoNamedQueue"
+                naming-strategy="namingStrategy"
+        />
+    -->
+
+    <!-- RabbitMQ 延迟队列参数配置 -->
+    <rabbit:queue-arguments id="delayedQueueArguments" key-type="java.lang.String" value-type="java.lang.Object">
+        <!-- 消息 TTL 配置，这里必须指定 value-type 为 java.lang.Long，否则将会报错 -->
+        <!--
+                <entry key="x-message-ttl" value="${rabbitmq.delayed}"/>
+                上面这种配置没有指定 value-type 类型为 java.lang.Long 导致报错，这是因为会将 ${rabbitmq.delayed} 解析为 '3000' 字符串
+                Caused by: com.rabbitmq.client.ShutdownSignalException: channel error;
+                protocol method: #method<channel.close>(reply-code=406, reply-text=PRECONDITION_FAILED
+                - invalid arg 'x-message-ttl' for queue 'delayed.queue' in vhost '/mq01':
+                {unacceptable_type,longstr}, class-id=50, method-id=10)
+        -->
+        <!--
+                上面这种配置没有指定 value-type 类型为 java.lang.Long 导致报错，这是因为会将 ${rabbitmq.delayed} 解析为 '3000' 字符串
+                Caused by: com.rabbitmq.client.ShutdownSignalException: channel error;
+                protocol method: #method<channel.close>(reply-code=406, reply-text=PRECONDITION_FAILED
+                - inequivalent arg 'x-message-ttl' for queue 'delayed.queue' in vhost '/mq01':
+                received '3000' but current is '3000', class-id=50, method-id=10)
+        -->
+        <entry key="x-message-ttl" value="${rabbitmq.delayed}" value-type="java.lang.Long"/>
+        <!-- 队列 TTL 配置 -->
+        <!--<entry key="x-expires" value="60000"/>-->
+        <!-- 死信交换机 -->
+        <entry key="x-dead-letter-exchange" value="${rabbitmq.delayed.handler.queue}"/>
+        <!-- 死信路由键 -->
+        <entry key="x-dead-letter-routing-key" value="${rabbitmq.delayed.handler.routing.key}"/>
+    </rabbit:queue-arguments>
+
+    <rabbit:queue
+            id="delayedQueue"
+            name="${rabbitmq.delayed.queue}"
+            queue-arguments="delayedQueueArguments"
+    />
+
+    <rabbit:direct-exchange
+            id="delayedExchange"
+            name="${rabbitmq.delayed.exchange}">
+        <rabbit:bindings>
+            <rabbit:binding queue="delayedQueue" key="${rabbitmq.delayed.routing.key}"/>
+        </rabbit:bindings>
+    </rabbit:direct-exchange>
+
+
+    <rabbit:queue
+            id="delayedHandlerQueue"
+            name="${rabbitmq.delayed.handler.queue}"
+    />
+
+    <rabbit:direct-exchange
+            id="delayedHandlerExchange"
+            name="${rabbitmq.delayed.handler.exchange}">
+        <rabbit:bindings>
+            <rabbit:binding queue="delayedHandlerQueue" key="${rabbitmq.delayed.handler.routing.key}"/>
+        </rabbit:bindings>
+    </rabbit:direct-exchange>
+
+    <rabbit:listener-container connection-factory="connectionFactory" message-converter="rabbitGsonMessageConverter"
+                               type="simple" acknowledge="manual" concurrency="2" prefetch="3">
+        <rabbit:listener ref="delayedQueueListener" queues="delayedHandlerQueue"/>
+    </rabbit:listener-container>
+
+
+</beans>
