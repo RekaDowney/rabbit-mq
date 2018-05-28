@@ -33,7 +33,7 @@ public class DelayQueue {
             // 3秒中内未被消费，则通过 DELAY_EXCHANGE 交换机以 DELAY_ROUTING_KEY 路由键转发消息
             arguments.put(FEATURE_X_MESSAGE_TTL, TimeUnit.SECONDS.toMillis(3));
             arguments.put(FEATURE_DEAD_LETTER_EXCHANGE, HANDLE_DELAY_EXCHANGE);
-            arguments.put(FEATURE_DEAD_LETTER_ROUNTING_KEY, HANDLE_DELAY_ROUTING_KEY);
+            arguments.put(FEATURE_DEAD_LETTER_ROUTING_KEY, HANDLE_DELAY_ROUTING_KEY);
             LOGGER.info("声明延迟交换机 {}，延迟队列 {}（队列参数：{}），延迟路由键 {}", DELAY_EXCHANGE, DELAY_QUEUE, arguments, DELAY_ROUTING_KEY);
             channel.exchangeDeclare(DELAY_EXCHANGE, BuiltinExchangeType.DIRECT, true, false, null);
             channel.queueDeclare(DELAY_QUEUE, true, false, false, arguments);

@@ -62,7 +62,7 @@ public final class MqConstant {
     public static final String FEATURE_X_EXPIRES = "x-expires";
     public static final String FEATURE_X_MAX_LENGTH = "x-max-length";
     public static final String FEATURE_DEAD_LETTER_EXCHANGE = "x-dead-letter-exchange";
-    public static final String FEATURE_DEAD_LETTER_ROUNTING_KEY = "x-dead-letter-routing-key";
+    public static final String FEATURE_DEAD_LETTER_ROUTING_KEY = "x-dead-letter-routing-key";
     public static final String FEATURE_X_MAX_PRIORITY = "x-max-priority";
 
     public static final class FanoutMC {
