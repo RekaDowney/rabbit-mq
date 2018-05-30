@@ -66,7 +66,7 @@ public class TestFanout {
             );
         }
 
-        TimeUnit.MINUTES.sleep(3);
+        TimeUnit.MILLISECONDS.sleep(500);
     }
 
 }
