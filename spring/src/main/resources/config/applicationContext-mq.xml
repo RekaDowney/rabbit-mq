@@ -12,8 +12,15 @@
        http://www.springframework.org/schema/rabbit/spring-rabbit.xsd
 ">
 
-    <!-- Spring Bean 扫描 -->
-    <context:component-scan base-package="me.junbin.rabbitmq.spring"/>
+    <!-- Spring Bean 扫描，不扫描 Controller、 ControllerAdvice、 RestController 和 RestControllerAdvice 注解 -->
+    <context:component-scan base-package="me.junbin.rabbitmq.spring" use-default-filters="true">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+        <context:exclude-filter type="annotation" expression="org.springframework.web.bind.annotation.RestController"/>
+        <context:exclude-filter type="annotation"
+                                expression="org.springframework.web.bind.annotation.ControllerAdvice"/>
+        <context:exclude-filter type="annotation"
+                                expression="org.springframework.web.bind.annotation.RestControllerAdvice"/>
+    </context:component-scan>
 
     <!-- 加载配置文件 -->
     <context:property-placeholder
@@ -171,12 +178,16 @@
                 queues 和 queue-names 必须至少存在一个；
                 priority 指定消费者的优先级；
                 exclusive 表示是否是排他消费者，默认为 false，true 的时候将会组织其他消费者从该队列消费消息。当设置为 true 时，必须将 concurrency 指定为 1
+                          特别注意：排他消费者能够保证消息的有序消费，但是如果该消费者宕掉了，则会造成消息堆积。
+                             想要实现消息有序消费。方案一：队列只有1个消费者，prefetch为1；方案二：队列有多个消费者，通过 zookeeper 选举出一个 master 进行消费，master 宕掉了重新选择一个 master 进行消费
+        -->
+        <!--
+            由于 fanoutQueueListener 配置了 exclusive，成为了排他消费者，因此 fanoutQueueListener2 无法消费消息，即配置了某个消费者 exclusive 之后，
+            即使是消息广播也只有一个消费者可以消费消息
         -->
         <rabbit:listener ref="fanoutQueueListener" queues="fanoutQueue" exclusive="true"/>
-        <rabbit:listener ref="fanoutQueueListener2" queues="fanoutQueue"/>
-        <rabbit:listener ref="directQueueListener" queues="directQueue"/>
-        <rabbit:listener ref="topicQueueListener" queues="topicQueue"/>
-        <rabbit:listener ref="headersQueueListener" queues="headersQueue"/>
+        <!-- 由于配置了排他消费者，因此其他监听相同队列的消费者无法访问该队列，会抛出 Channel shutdown: channel error; protocol method: #method<channel.close>(reply-code=403, reply-text=ACCESS_REFUSED 异常  -->
+        <!--<rabbit:listener ref="fanoutQueueListener2" queues="fanoutQueue"/>-->
     </rabbit:listener-container>
 
     <!--
@@ -252,6 +263,9 @@
     <rabbit:listener-container connection-factory="connectionFactory" message-converter="rabbitGsonMessageConverter"
                                type="simple" acknowledge="manual" concurrency="2" prefetch="3">
         <rabbit:listener ref="delayedQueueListener" queues="delayedHandlerQueue"/>
+        <rabbit:listener ref="directQueueListener" queues="directQueue"/>
+        <rabbit:listener ref="topicQueueListener" queues="topicQueue"/>
+        <rabbit:listener ref="headersQueueListener" queues="headersQueue"/>
     </rabbit:listener-container>
 
 

@@ -23,6 +23,7 @@ public class TestRetryTemplate {
 
     @Test
     public void test01() throws Exception {
+        // 关于 RetryTemplate#execute(RetryCallback, RecoveryCallback, RetryState) 的第三个参数（用于有状态的重试）参考：https://blog.csdn.net/broadview2006/article/details/72841056
         RetryTemplate retryTemplate = new RetryTemplate();
         RetryPolicy retryPolicy = new SimpleRetryPolicy(5);
         retryTemplate.setRetryPolicy(retryPolicy);

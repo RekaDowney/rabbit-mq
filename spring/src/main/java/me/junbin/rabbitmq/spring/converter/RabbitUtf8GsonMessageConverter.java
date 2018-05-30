@@ -2,6 +2,7 @@ package me.junbin.rabbitmq.spring.converter;
 
 import com.google.gson.Gson;
 import me.junbin.commons.gson.Gsonor;
+import me.junbin.rabbitmq.spring.message.MessageEntity;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.support.converter.AbstractJsonMessageConverter;
@@ -11,6 +12,7 @@ import org.springframework.amqp.support.converter.MessageConversionException;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
  * @author : Zhong Junbin
@@ -21,7 +23,16 @@ import java.nio.charset.StandardCharsets;
 public class RabbitUtf8GsonMessageConverter extends AbstractJsonMessageConverter {
 
     private Gson gson = Gsonor.SIMPLE.getGson();
-    private ClassMapper classMapper = new DefaultClassMapper();
+    private ClassMapper classMapper = new DefaultClassMapper() {
+        {
+            // 消息体允许任意包下的类，而不是仅仅允许消息体为 java.lang 或者 java.util 包下的类
+            // this.setTrustedPackages("*");
+            // 仅允许 MessageEntity、String、List 这三个类所在的包，即扩展了 java.lang 和 java.util 包
+            this.setTrustedPackages(MessageEntity.class.getPackage().getName(),
+                    String.class.getPackage().getName(),
+                    List.class.getPackage().getName());
+        }
+    };
     private static final Charset UTF8 = StandardCharsets.UTF_8;
 
     public RabbitUtf8GsonMessageConverter() {
@@ -35,7 +46,7 @@ public class RabbitUtf8GsonMessageConverter extends AbstractJsonMessageConverter
     protected Message createMessage(Object object, MessageProperties messageProperties) {
         byte[] bytes = this.gson.toJson(object).getBytes(UTF8);
         messageProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
-//        messageProperties.setContentEncoding(charset.name());
+        // messageProperties.setContentEncoding(UTF8.name());
         messageProperties.setContentLength(bytes.length);
         this.classMapper.fromClass(object.getClass(), messageProperties);
         return new Message(bytes, messageProperties);
@@ -52,9 +63,6 @@ public class RabbitUtf8GsonMessageConverter extends AbstractJsonMessageConverter
                 Class<?> targetClass = this.classMapper.toClass(message.getMessageProperties());
                 content = this.gson.fromJson(new String(message.getBody(), UTF8), targetClass);
             }
-        }
-        if (content == null) {
-            content = message.getBody();
         }
         return content;
     }

@@ -468,7 +468,7 @@ _noLocal_
 
 _exclusive_
 
-　　`true`表示当前消费者是排他的。具体实例场景与说明参考：[排他消费者应用][exclusive-consume]
+　　`true`表示当前消费者是排他的。具体实例场景与说明参考：[排他消费者介绍][exclusive-consume]
 
 _arguments_
 

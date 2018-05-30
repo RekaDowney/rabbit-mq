@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop.xsd
+">
+
+    <!--
+        扫描 @Component, @Repository, @Service, @Controller,
+        @RestController, @ControllerAdvice, @Configuration 等原型注解
+        由于默认 annotation-config 也为 true，因此以上注解内的 @Autowired,
+        @PostConstruct, @PreDestroy, @Resource 等注解也会被扫描处理
+	-->
+    <!--<context:component-scan base-package="me.junbin.rabbitmq.spring" annotation-config="true"/>-->
+
+    <!-- 扫描 @Autowired, @PostConstruct, @PreDestroy, @Resource 等注解 -->
+    <!--<context:annotation-config/>-->
+
+    <!-- 扫描 Spring AOP 切面相关注解 -->
+    <aop:aspectj-autoproxy expose-proxy="true" proxy-target-class="false"/>
+
+    <bean id="orderService" class="me.junbin.rabbitmq.spring.retry.OrderService"/>
+
+    <bean class="org.springframework.retry.annotation.RetryConfiguration"/>
+
+</beans>

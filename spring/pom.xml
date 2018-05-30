@@ -14,7 +14,21 @@
 
     <name>spring Maven Webapp</name>
 
+    <properties>
+        <module.context.path>/</module.context.path>
+        <module.port>80</module.port>
+    </properties>
+
     <dependencies>
+        <!-- @Retryable @Recover 等切入点相关注解扫描必须 -->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>aopalliance</groupId>
+            <artifactId>aopalliance</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -52,5 +66,21 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <path>${module.context.path}</path>
+                    <port>${module.port}</port>
+                    <uriEncoding>${project.build.sourceEncoding}</uriEncoding>
+                    <server>tomcat7</server>
+                </configuration>
+            </plugin>
+
+        </plugins>
     </build>
 </project>

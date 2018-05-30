@@ -14,6 +14,8 @@ import org.springframework.retry.support.RetryTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author : Zhong Junbin
  * @email : <a href="mailto:rekadowney@gmail.com">发送邮件</a>
@@ -35,7 +37,7 @@ public class TestFanout {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestFanout.class);
 
     @Test
-    public void test01() throws Exception {
+    public void testProduceConsume() throws Exception {
         // 通过
         for (int i = 1; i <= 10; i++) {
             FanoutMessage message = new FanoutMessage((long) i, String.format("第%d条消息", i));
@@ -46,7 +48,9 @@ public class TestFanout {
                         int retryCount = retryContext.getRetryCount();
                         Throwable lastThrowable = retryContext.getLastThrowable();
                         if (lastThrowable != null) {
-                            LOGGER.info("第{}次重试发送失败，异常：{}", retryCount, lastThrowable.getMessage());
+                            LOGGER.info("第{}次重试发送消息：{}失败，异常：{}", retryCount, Gsonor.SIMPLE.toJson(message), lastThrowable.getMessage());
+                        } else {
+                            LOGGER.info("第1次发送消息：{}", Gsonor.SIMPLE.toJson(message));
                         }
                         rabbitTemplate.convertAndSend(springMqConstant.getFanoutExchange(), MqConstant.EMPTY, message);
                         return null;
@@ -61,6 +65,8 @@ public class TestFanout {
                     }
             );
         }
+
+        TimeUnit.MINUTES.sleep(3);
     }
 
 }
