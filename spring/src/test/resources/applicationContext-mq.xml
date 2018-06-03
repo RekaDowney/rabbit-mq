@@ -143,53 +143,6 @@
         </rabbit:bindings>
     </rabbit:headers-exchange>
 
-    <!--
-        connection-factory 指定 RabbitMQ 的连接池 BeanName。默认为：rabbitConnectionFactory
-
-        message-converter 指定实现 org.springframework.amqp.support.converter.MessageConverter 的消息转换器。
-                          默认为：org.springframework.amqp.support.converter.SimpleMessageConverter
-
-        type 为 simple 的时候采用 org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer 实例（默认）；
-             为 direct 的时候采用 org.springframework.amqp.rabbit.listener.DirectMessageListenerContainer 实例。
-
-        acknowledge 为 manual 时 Listener 必须实现 org.springframework.amqp.rabbit.core.ChannelAwareMessageListener 接口；
-                    为 none 或者 auto 时 Listener 可以只实现 org.springframework.amqp.core.MessageListener
-
-        auto-declare 指定当与消费者相关联的 queue 或者 exchange 因为 auto-delete 或者 ttl 等原因造成丢失时自动重新声明这些 queue 或者 exchange（默认为 true）
-
-        error-handler 指定（TaskScheduler）消息异步处理过程中出现的异常，必须是 org.springframework.util.ErrorHandler 实例
-
-        channel-transacted 表示是否开启事务，默认为 false，如果 acknowledge 为 none 则不能配置为 true（即自动确认机制不可以开启事务）
-
-        concurrency 只有当 type="simple" 时生效，设置启动消费者（MessageListener）的初始并发量。
-                    虽然我们只配置了一个 MessageListener，但是 Spring 会通过多线程方式调用同一个 MessageListener 执行并发消费
-
-        max-concurrency 只有当 type="simple" 时生效，设置启动消费者（MessageListener）的最大并发量，必须大于或等于 concurrency
-
-        prefetch 指定 MQ 在单个请求中向消费者发送多少条请求，该值越大则吞吐量越大。该值必须大于等于事务处理的消息数量
-
-     -->
-    <!-- 如果 Listener 没有实现 ChannelAwareMessageListener 接口或者 MessageListener 接口，则可以通过 method 字段指定消息消费方法 -->
-    <rabbit:listener-container connection-factory="connectionFactory" message-converter="rabbitGsonMessageConverter"
-                               type="simple" acknowledge="manual" concurrency="1" prefetch="3">
-        <!--
-                ref 指定消费者；
-                queues 指定消费者所监听的队列引用（即 rabbit:queue#id 属性），多个采用英文逗号分隔；
-                queue-names 指定消费者所监听的队列名称（即 rabbit:queue#name 属性），多个采用英文逗号分隔；
-                queues 和 queue-names 必须至少存在一个；
-                priority 指定消费者的优先级；
-                exclusive 表示是否是排他消费者，默认为 false，true 的时候将会组织其他消费者从该队列消费消息。当设置为 true 时，必须将 concurrency 指定为 1
-                          特别注意：排他消费者能够保证消息的有序消费，但是如果该消费者宕掉了，则会造成消息堆积。
-                             想要实现消息有序消费。方案一：队列只有1个消费者，prefetch为1；方案二：队列有多个消费者，通过 zookeeper 选举出一个 master 进行消费，master 宕掉了重新选择一个 master 进行消费
-        -->
-        <!--
-            由于 fanoutQueueListener 配置了 exclusive，成为了排他消费者，因此 fanoutQueueListener2 无法消费消息，即配置了某个消费者 exclusive 之后，
-            即使是消息广播也只有一个消费者可以消费消息
-        -->
-        <rabbit:listener ref="fanoutQueueListener" queues="fanoutQueue" exclusive="true"/>
-        <!-- 由于配置了排他消费者，因此其他监听相同队列的消费者无法访问该队列，会抛出 Channel shutdown: channel error; protocol method: #method<channel.close>(reply-code=403, reply-text=ACCESS_REFUSED 异常  -->
-        <!--<rabbit:listener ref="fanoutQueueListener2" queues="fanoutQueue"/>-->
-    </rabbit:listener-container>
 
     <!--
         &lt;!&ndash; 按照月份生成队列名称策略 &ndash;&gt;
@@ -253,7 +206,6 @@
             name="${rabbitmq.delayed.handler.queue}"
     />
 
-    <!-- 定义为内部交换机，用于处理死信交换机投递过来的消息 -->
     <rabbit:direct-exchange
             id="delayedHandlerExchange"
             name="${rabbitmq.delayed.handler.exchange}"
@@ -263,13 +215,6 @@
         </rabbit:bindings>
     </rabbit:direct-exchange>
 
-    <rabbit:listener-container connection-factory="connectionFactory" message-converter="rabbitGsonMessageConverter"
-                               type="simple" acknowledge="manual" concurrency="2" prefetch="3">
-        <rabbit:listener ref="delayedQueueListener" queues="delayedHandlerQueue"/>
-        <rabbit:listener ref="directQueueListener" queues="directQueue"/>
-        <rabbit:listener ref="topicQueueListener" queues="topicQueue"/>
-        <rabbit:listener ref="headersQueueListener" queues="headersQueue"/>
-    </rabbit:listener-container>
 
     <rabbit:queue
             id="autoDeleteQueue"
@@ -287,15 +232,5 @@
             <rabbit:binding queue="autoDeleteQueue"/>
         </rabbit:bindings>
     </rabbit:fanout-exchange>
-
-    <rabbit:listener-container connection-factory="connectionFactory" message-converter="rabbitGsonMessageConverter"
-                               acknowledge="manual" concurrency="1" prefetch="1">
-        <!-- 即使这里制定了 method 为 idempotentConsumeRetryable，但是消息依然是走了抽象父类的 onMessage 方法 -->
-        <!-- 因此，只要 listener 实现了 org.springframework.amqp.rabbit.core.ChannelAwareMessageListener 或者 org.springframework.amqp.core.MessageListener 接口，则直接调用 onMessage 方法 -->
-        <rabbit:listener ref="specificMethodQueueListener" queues="autoDeleteQueue"
-                         method="idempotentConsumeRetryable"/>
-        <rabbit:listener ref="simpleQueueListener" queues="autoDeleteQueue"
-                         method="handleMessage"/>
-    </rabbit:listener-container>
 
 </beans>

@@ -28,8 +28,8 @@ public class SpringMqConstant {
     private String headersExchange;
     @Value("${rabbitmq.delayed.exchange}")
     private String delayedExchange;
-
-    public static final String EMPTY = "";
+    @Value("${rabbitmq.delayed.routing.key}")
+    private String delayedRoutingKey;
 
     public <T> T get(String key, Class<T> type) {
         return environment.getProperty(key, type);
@@ -57,6 +57,10 @@ public class SpringMqConstant {
 
     public String getDelayedExchange() {
         return delayedExchange;
+    }
+
+    public String getDelayedRoutingKey() {
+        return delayedRoutingKey;
     }
 
 }

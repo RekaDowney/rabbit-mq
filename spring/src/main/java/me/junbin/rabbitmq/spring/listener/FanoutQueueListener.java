@@ -21,7 +21,7 @@ public class FanoutQueueListener extends AbstractRetryableMessageListener<Fanout
     private static final Logger LOGGER = LoggerFactory.getLogger(FanoutQueueListener.class);
 
     @Override
-    ConsumeResult idempotentConsumeRetryable(FanoutMessage message, MessageProperties properties, RetryContext retryContext) {
+    public ConsumeResult idempotentConsumeRetryable(FanoutMessage message, MessageProperties properties, RetryContext retryContext) {
         retryContext.setAttribute(MqConstant.MESSAGE, message);
         if (retryContext.getLastThrowable() != null) {
             LOGGER.info("第{}次重试消费：{}。上次消费失败原因：{}", retryContext.getRetryCount(),
@@ -33,9 +33,9 @@ public class FanoutQueueListener extends AbstractRetryableMessageListener<Fanout
     }
 
     @Override
-    ConsumeResult recoverForAllRetryFail(FanoutMessage message, MessageProperties properties, RetryContext retryContext) {
+    public ConsumeResult recoverForAllRetryFail(FanoutMessage message, MessageProperties properties, RetryContext retryContext) {
         assert retryContext.getAttribute(MqConstant.MESSAGE) == message;
-        LOGGER.info("消息{}消费失败达到{}次", Gsonor.SIMPLE.toJson(message), retryContext.getRetryCount());
+        LOGGER.info("消息{}消费失败达到{}次，丢弃该消息", Gsonor.SIMPLE.toJson(message), retryContext.getRetryCount());
         return ConsumeResult.FAIL;
     }
 

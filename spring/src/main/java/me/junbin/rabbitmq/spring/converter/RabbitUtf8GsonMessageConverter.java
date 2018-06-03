@@ -67,6 +67,15 @@ public class RabbitUtf8GsonMessageConverter extends AbstractJsonMessageConverter
         return content;
     }
 
+    public <T> T fromMessage(Message message, Class<T> typeOfT) throws MessageConversionException {
+        Object msg = fromMessage(message);
+        if (typeOfT.isAssignableFrom(msg.getClass())) {
+            //noinspection unchecked
+            return (T) msg;
+        }
+        throw new MessageConversionException(String.format("无法将%s转换成%s", msg.getClass().getName(), typeOfT.getName()));
+    }
+
     public Gson getGson() {
         return gson;
     }

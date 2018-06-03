@@ -19,14 +19,33 @@ public abstract class AbstractMessageListener<T extends MessageEntity> implement
     @Autowired
     protected MessageConverter messageConverter;
 
-    abstract void handleMessage(T message, MessageProperties properties, Channel channel) throws Exception;
+    public abstract ConsumeResult handleMessage(T message, MessageProperties properties, Channel channel) throws Exception;
 
     @Override
     public void onMessage(Message message, Channel channel) throws Exception {
-        @SuppressWarnings("unchecked")
-        T msg = (T) messageConverter.fromMessage(message);
-        MessageProperties properties = message.getMessageProperties();
-        this.handleMessage(msg, properties, channel);
+        ConsumeResult result = ConsumeResult.FAIL;
+        try {
+            @SuppressWarnings("unchecked")
+            T msg = (T) messageConverter.fromMessage(message);
+            MessageProperties properties = message.getMessageProperties();
+            result = this.handleMessage(msg, properties, channel);
+        } finally {
+            long deliveryTag = message.getMessageProperties().getDeliveryTag();
+            if (result == null) {
+                result = ConsumeResult.FAIL;
+            }
+            switch (result) {
+                case RETRY:
+                    channel.basicReject(deliveryTag, true);
+                    break;
+                case FAIL:
+                    channel.basicReject(deliveryTag, false);
+                    break;
+                case OK:
+                default:
+                    channel.basicAck(deliveryTag, false);
+            }
+        }
     }
 
 }
