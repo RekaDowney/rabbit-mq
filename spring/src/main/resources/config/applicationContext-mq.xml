@@ -290,10 +290,20 @@
 
     <rabbit:listener-container connection-factory="connectionFactory" message-converter="rabbitGsonMessageConverter"
                                acknowledge="manual" concurrency="1" prefetch="1">
-        <!-- 即使这里制定了 method 为 idempotentConsumeRetryable，但是消息依然是走了抽象父类的 onMessage 方法 -->
+        <!-- 这里指定两个消费者 -->
+        <!-- 即使这里指定了 method 为 idempotentConsumeRetryable，但是消息依然是走了抽象父类的 onMessage 方法 -->
         <!-- 因此，只要 listener 实现了 org.springframework.amqp.rabbit.core.ChannelAwareMessageListener 或者 org.springframework.amqp.core.MessageListener 接口，则直接调用 onMessage 方法 -->
         <rabbit:listener ref="specificMethodQueueListener" queues="autoDeleteQueue"
                          method="idempotentConsumeRetryable"/>
+        <!--
+            如果 listener 没有实现 ChannelAwareMessageListener 或者 MessageListener 接口，则必须指定 method 方法，否则抛出如下异常：
+            Caused by: org.springframework.amqp.AmqpIllegalStateException: No default listener method specified: Either specify a non-null value for the 'defaultListenerMethod' property or override the 'getListenerMethodName' method.
+
+            同时，此时方法的入参只能够是通过 messageConverter 转换后的对象，不能是原生的 org.springframework.amqp.core.Message
+            Caused by: java.lang.NoSuchMethodException: me.junbin.rabbitmq.spring.listener.SimpleQueueListener.handleMessage2(me.junbin.rabbitmq.spring.message.FanoutMessage)
+
+            特别注意：由于设置了 acknowledge 为 manual，但 listener 没有实现 ChannelAwareMessageListener 接口，导致 RabbitMQ 收不到会址，
+        -->
         <rabbit:listener ref="simpleQueueListener" queues="autoDeleteQueue"
                          method="handleMessage"/>
     </rabbit:listener-container>
